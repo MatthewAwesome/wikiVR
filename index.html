@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>EINSTEIN</title>
+    <meta name="description" content="Lost in Einstein">
+    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script> 
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v4.2.0/dist/aframe-extras.min.js"></script>
+    <script src="./einstein.js"></script>
+    <script src="./einsteinModel.js"></script>
+    <script src="./daydreamControls.js"></script>
+    <script src="./sectionScene.js"></script>
+  </head>
+  <body>
+    <a-scene einstein>
+      <a-assets>
+        <img id="floorTexture" src="./assets/blueMarble.jpg">
+        <img id="brickTexture" src="./assets/bricksSeamless.jpg">
+        <img id="skyTexture" src="./assets/starsSmall.jpg">
+        <img id="groundTexture" src="./assets/floorTexture.png">
+        <a-asset-item id="einsteinModel" src="./assets/einsteinModel/scene.gltf"></a-asset-item>
+        <a-asset-item id="wormholeModel" src="./assets/wormhole/model.gltf"></a-asset-item>
+        <audio id="c_key" src="./assets/sounds/c.mp3" preload="true"></audio>        
+      </a-assets>
+      <!-- 
+       raycaster notes: Evertime the raycaster intersects an (interactable) element, an event will be thrown. 
+       In response to this event, we get details about which event is intersected. In response to this, we make cool things happen. 
+
+       The tricky part seems to be how we respond to the button-press events. Perhaps, the most straightforward way of 
+       doing this is access the raycaster goodies directly (i.e. the three.js raycaster object). If we have button-press && 
+       an intersection with something 'clickable', then we do something. 
+
+       Its really the combination of components that makes this all work. 
+
+       We start wtih saying we have a laser; 
+
+       Then we give it an id, 
+
+       endow it with daydream-controls, 
+       
+       raycaster, 
+       
+       and daydream-listener component methods/events. (the latter injects some javascript to handle events, etc). 
+
+      -->
+      <a-entity laser-controls="hand: right" id = 'lasers' daydream-controls raycaster="objects: .interactive"  daydream-listener >
+        <a-camera position="0 2 0">
+          <a-entity
+            cursor="fuse: true; fuseTimeout: 500"
+            position="0 0 -1"
+            geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+            material="color:#00FF00; shader: flat"
+            id="camera-cursor"
+          >
+          </a-entity>   
+          </a-camera>
+      </a-entity>
+
+      <a-entity id="csound" sound="src: #c_key"></a-entity>
+       <!-- ADDING THE CAMERA, and endow it will cursor abilities.   -->
+<!--       <a-entity id = "acc-camera" visible = "true">
+        <a-camera id = "non-vr-camera" active='true'>
+          <a-entity
+            cursor="fuse: true; fuseTimeout: 500"
+            position="0 0 -1"
+            geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+            material="color:#00FF00; shader: flat"
+            id="camera-cursor"
+          >
+          </a-entity>       
+        </a-camera>
+      </a-entity> -->
+      <a-entity wiki></a-entity>
+      <a-entity id="portal-group"></a-entity>
+      <a-sphere radius="10000" position="0 0 0" rotation="0 90 -90" material="src:#skyTexture;side:back"></a-sphere>
+      <a-entity light="type: hemisphere; color: #fff; groundColor: #fff; intensity: 1.5"></a-entity>
+      <a-entity light="type: ambient; color: #444"></a-entity>
+      <a-entity id="plane" geometry="primitive: plane; width: 10000; height: 10000" material="color: #aaa; src: #groundTexture; repeat: 5000 5000; transparent: true; metalness: 0.1; roughness: 0.4" rotation="-90 0 0"></a-entity>
+      <a-entity albertmodel id="einstein-model" gltf-model="#einsteinModel" scale="0.25 0.25 0.25" position="0 0 0" rotation="0 -90 0"></a-entity>
+    </a-scene>
+  </body>
+</html>
