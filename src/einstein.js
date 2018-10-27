@@ -139,11 +139,12 @@ function createTextEl (str, theta) {
   textEl.setAttribute('align', 'center');
   textEl.setAttribute('anchor', 'center');
   textEl.setAttribute('baseline', 'bottom');
-  textEl.setAttribute('scale', {x: 4, y: 4, z: 4});
+  textEl.setAttribute('scale', {x: 7, y: 7, z: 7});
   textEl.setAttribute('side', 'double');
   textEl.setAttribute('position', {x: 0, y: 2, z: 0});
   textEl.setAttribute('rotation', {x: 0, y: theta, z: 0});
   textEl.setAttribute('font', 'dejavu');
+  textEl.setAttribute('color','white')
   return textEl;
 }
 
