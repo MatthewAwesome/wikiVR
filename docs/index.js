@@ -288,7 +288,7 @@ AFRAME.registerComponent('wikiscene', {
         var children = sectionDetails; 
         // var id = "#"  + e.currentTarget.id; 
         var cSoundEl = document.querySelector('#csound');
-        // cSoundEl.components.sound.playSound();
+        cSoundEl.components.sound.playSound();
         // Change the line color: 
         var lineEl = e.currentTarget.querySelector('#lineEl'); 
         lineEl.setAttribute('material',{color:"#EEEEEE",transparent:true,opacity:0.9})

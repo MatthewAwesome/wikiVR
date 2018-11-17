@@ -1,48 +1,77 @@
-// a script that's associated with Einstein...
+/***************************************************************
+****************************************************************
+****************************************************************
+
+Part of WIKIVR, a Wikipedia-based virtual reality experiment. 
+
+Author: Matthew Ellis 
+   
+All rights reserved, 2018. 
+
+****************************************************************
+***************************************************************
+***************************************************************/
+
+/**********
+This is an umbrella component that handles into and out-of VR events. That's really it. 
+**********/
+
+// Would an armModel help? 
 
 AFRAME.registerComponent('einstein', {
   /**
   Basically we can have an HTML <--> JS bridge. Elements can be accessed accordingly.
    * Code within this function will be called when everything in <a-scene> is ready and loaded.
    */
-  init: async function () {
+  init: function () {
     // Set event handlers for enter/leave VR:
-    var sceneEl = document.querySelector('a-scene');
-    this.intoVR = AFRAME.utils.bind(this.intoVR, this);
-    this.outOfVR = AFRAME.utils.bind(this.outOfVR, this);
+    this.intoVR  = AFRAME.utils.bind(this.intoVR,this);
+    this.outOfVR = AFRAME.utils.bind(this.outOfVR,this);
     this.el.addEventListener('enter-vr', this.intoVR);
     this.el.addEventListener('exit-vr', this.outOfVR);
-    var wikiEl = document.querySelector('#wikiscene'); 
-    wikiEl.setAttribute('title','dude')
   },
-  update: function () {
-  	console.log('update');
+  // Handling the transisition to VR:
+  intoVR: async function () {
+    // Get the entity of interest: 
+    let daydreamController = this.el.querySelector('#lasers');
+    // we want to add a light to our raycaster, and remove that cursor since we're in VR. 
+    var sceneCamera = this.el.sceneEl.querySelector("#scenecam");
+    var cursor = await sceneCamera.querySelector('[cursor]'); 
+    if(cursor){
+      cursor.parentNode.removeChild(cursor); 
+    }
+    daydreamController.setAttribute('light',{type:'spot',color:'#fff',angle:18,penumbra:0.67,}); 
+    // set user component as intoVR = true; 
+    daydreamController.setAttribute('user',{inVR:true});
   },
-
-  intoVR: function () {
-  	// Make visible the daydream cursor,
-  	console.log('in VR');
-  	// Make visible the daydream cursor,
-  	var daydreamController = this.el.querySelector('#lasers');
-  	daydreamController.setAttribute('visible', true);
-  	// Hide the camera cursor:
-  	// var camera = this.el.querySelector('#non-vr-camera');
-  	// camera.setAttribute('active',false);
-  	// var cursor = this.el.querySelector('#acc-camera');
-  	// cursor.setAttribute('visible',false);
-  },
+  // Transition out of VR: 
   outOfVR: function () {
-  	console.log('out of VR');
-  	// Make visible the daydream cursor,
-  	var daydreamController = this.el.querySelector('#lasers');
-  	daydreamcontroller.setAttribute('visible', false);
-  	// Hide the camera cursor:
-  	// var camera = this.el.querySelector('#non-vr-camera');
-  	// camera.setAttribute('active',true);
-  	// var cursor = this.el.querySelector('#acc-camera');
-  	// cursor.setAttribute('visible',true);
+    // Essentially doing the opposite of intoVR(). 
+    var cursor = document.createElement('a-entity'); 
+    var sceneCamera = this.el.sceneEl.querySelector("#scenecam");
+    var camera = sceneCamera.querySelector('[camera]'); 
+    var cursor = document.createElement('a-entity'); 
+    // Set the attributes:
+    cursor.setAttribute('id','camera-cursor'); 
+    cursor.setAttribute('position',{x:0,y:0,z:-1}); 
+    cursor.setAttribute('geometry',{primitive:'ring',radiusInner:0.02,radiusOuter:0.03}); 
+    cursor.setAttribute('material',{color:'#ccc',shader:'flat'}) 
+    cursor.setAttribute('cursor',{fuse:true,fuseTimeout:500}); 
+    // Make the light:
+    var light = document.createElement('a-entity'); 
+    light.setAttribute('light',{type:'spot',color:'#fff',angle:18,penumbra:0.67,}); 
+    // Package 'em together:
+    cursor.appendChild(light);
+    camera.appendChild(cursor); 
+    // Reset some things on daydreamController: (remove light and set inVR as false)
+  	let daydreamController = this.el.querySelector('#lasers');
+    daydreamController.setAttribute('user',{inVR:false}); 
+    daydreamController.removeAttribute('light'); 
   }
 });
+
+
+
 
 async function getWikiData () {
 	// define query string:
@@ -123,15 +152,4 @@ async function imageGrabber (sectionObj) {
   return 'foo';
 }
 
-      // var newModel = document.createElement('a-torus-knot');
-      // newModel.setAttribute('color',"#01FF40");
-      // newModel.setAttribute('arc',360);
-      // newModel.setAttribute('p',3);
-      // newModel.setAttribute('q',5);
-      // newModel.setAttribute('radius',0.8);
-      // newModel.setAttribute('radius-tubular',0.05);
-      // newModel.setAttribute('segments-radial',32);
-      // newModel.setAttribute('segments-tubular',120);
-      // newModel.setAttribute('metalness',0.2);
-      // newModel.setAttribute('roughness',0.8);
 

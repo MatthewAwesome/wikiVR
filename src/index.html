@@ -1,4 +1,17 @@
 <!DOCTYPE html>
+<!--***************************************************************
+****************************************************************
+****************************************************************
+
+Part of WIKIVR, a Wikipedia-based virtual reality experiment. 
+
+Author: Matthew Ellis 
+   
+All rights reserved, 2018. 
+
+****************************************************************
+***************************************************************
+***************************************************************-->
 <html>
   <head>
     <title>EINSTEIN</title>
@@ -7,12 +20,15 @@
     <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script> 
     <script src="https://unpkg.com/aframe-animation-component@^5.1.2/dist/aframe-animation-component.min.js"></script>
     <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v4.2.0/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/aframe-svg-extruder@1.0.0/dist/index.min.js"></script>
+    <script src="./cursorLight.js"></script>
+    <script src="./desktopCamera.js"></script>
     <script src="./einstein.js"></script>
-    <script src="./daydreamControls.js"></script>
     <script src="./index.js"></script>
   </head>
   <body id="index">
     <a-scene einstein>
+      <a-entity id="scenecam" desktop-camera></a-entity>
       <a-assets>
         <img id="floorTexture" src="./assets/blueMarble.jpg">
         <img id="brickTexture" src="./assets/bricksSeamless.jpg">
@@ -22,17 +38,7 @@
         <a-asset-item id="wormholeModel" src="./assets/wormhole/model.gltf"></a-asset-item>
         <audio id="c_key" src="./assets/sounds/c.mp3" preload="true"></audio>        
       </a-assets>
-      <a-entity laser-controls="hand: right" id = 'lasers' daydream-controls raycaster="objects: .interactive; recursive: true"  daydream-listener >
-        <a-camera look-controls position="0 1.6 0">
-          <a-entity
-            cursor="fuse: true; fuseTimeout: 500"
-            position="0 0 -1"
-            geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
-            material="color:#aaaaaa; shader: flat"
-            id="camera-cursor"
-          >
-          </a-entity>   
-        </a-camera>
+      <a-entity laser-controls="hand: right" id = 'lasers' raycaster="recursive:true; showLine:false" user daydream-controls>
       </a-entity>
       <a-entity id="csound" sound="src: #c_key"></a-entity>
       <a-entity id="wikiscene" wikiscene></a-entity>
