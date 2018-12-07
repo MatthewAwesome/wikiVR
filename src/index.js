@@ -45,6 +45,54 @@ AFRAME.registerComponent('wikisection', {
 	}
 })
 
+/************************************ 
+  A component to take in a section, 
+  and in context to the root, 
+  return a 3d object based on the section's content. 
+************************************/ 
+AFRAME.registerComponent('sectionshape', {
+  // The section need only the section object,
+  schema:{
+    descendant: {default: {}},
+    rootSection:{default:{}}
+  },
+  init: async function(){
+    var descendant   = this.data.descendant; 
+    var rootSection  = this.data.rootSection; 
+    // console.log(rootSection);
+    var height       = Math.abs(descendant.height - rootSection.height-1)*0.1;  
+    // console.log(height)
+    var colorIndex   = Math.abs((descendant.height - rootSection.height))/rootSection.height;
+    var sectionColor =  d3.interpolatePurples(colorIndex); 
+    // We position relative to the parent: 
+
+      var x_position = rootSection.x-descendant.x; 
+      var z_position = (rootSection.y - descendant.y); 
+  
+    // Okay. Now render the shape. 
+    this.el.setAttribute('material',{color:sectionColor,metalness:0.6,roughness:0.4}); 
+    if(descendant.children && descendant.children.length > 0){
+      // Its going to be a cylinder: 
+      this.el.setAttribute("geometry",{primitive:'cylinder',radius:descendant.r,height:height}); 
+      this.el.setAttribute("position",{x:z_position,y:height/2,z:x_position})
+    }
+    else{
+      // Its going to be a sphere: 
+      var randomBoost = 2 * Math.random() + 0.2;
+      var newColor = d3.interpolatePurples(1);
+      this.el.setAttribute('material',{color:newColor,metalness:0.6,roughness:0.4}); 
+      this.el.setAttribute("geometry",{primitive:'sphere',radius:descendant.r})
+      this.el.setAttribute("position",{x:z_position,y:height+descendant.r+0.2+randomBoost,z:x_position})
+    }
+    if(descendant == rootSection){
+      console.log(this.el.object3D)
+    }
+    else{
+      // console.log(descendant,rootSection)
+    }
+  }
+})
+
 /************************************
 	A Wiki-link component:
 	Links change the scene to a different page when clicked. 
@@ -85,6 +133,7 @@ AFRAME.registerComponent('wikiscene', {
 		// Build a scene based upon the data: 
     var integralSections = wikiData.sections().filter(x => sectionChecker(x.data.title)); 
     var sectionTree = await this.constructSectionTree(integralSections); 
+    this.el.appendChild(sectionTree); 
     console.log(sectionTree); 
     var initSections = wikiData.sections().filter(x => sectionChecker(x.data.title)).filter( y => y.depth == 0); 
     console.log(wikiData.sections()); 
@@ -92,7 +141,7 @@ AFRAME.registerComponent('wikiscene', {
 		// Update the component: 
 		this.el.setAttribute('wikiscene',{pagedata:wikiData}); 
 		// register to system. Which will handle the the addition os sections, etc. 
-		this.el.setAttribute('rotation', {x: 0, y: 180, z: 0}); 
+		// this.el.setAttribute('rotation', {x: 0, y: 180, z: 0}); 
 		// Add a ring and place objects about it; for aesthetics, really.
     // this.speaker(); 
    
@@ -367,7 +416,6 @@ AFRAME.registerComponent('wikiscene', {
     // Making a container entity: 
     var treeEntity = document.createElement('a-entity'); 
     treeEntity.setAttribute('id',"sectiontree"); 
-    this.el.appendChild(treeEntity); 
     // First we make our arry consisting of objects of {name:section_name,parent:section_parent}. 
     var rootObj = {name:"doc",parent:"",value:0}; 
     var hierarchyArray = [rootObj,]; 
@@ -391,72 +439,47 @@ AFRAME.registerComponent('wikiscene', {
     }
     // Generate a root node via d3.stratify; 
     var rootNode = d3.stratify()
-        .id(function(d) { return d.name; })
-        .parentId(function(d) { return d.parent; })
-        (hierarchyArray);
-    // Make a pack layout: 
-    var packLayout = d3.pack();
-    packLayout.size([5,5])
-              .padding(0.7); 
-    // Sum it up: 
-    rootNode.sum(function(d) {
-      return d.value;
-    });
-    // Now pack it up! 
+                     .id(function(d) { return d.name; })
+                     .parentId(function(d) { return d.parent; })
+                     (hierarchyArray);
+    // Sum it: 
+    rootNode.sum(d => d.value); 
+    var packLayout = d3.pack(); 
+    packLayout.size([18,18])
+              .padding(1);
     packLayout(rootNode); 
-    // Okay, now every node in our tree has x,y,r attributes. Use this attributes to position our cylinders! 
-    d3.select('#sectiontree')
-      .selectAll('.section_node')
-      .data(rootNode.descendants())
-      .enter()
-      .append('a-entity')
-      .attr('class','section_node')
-      .attr('geometry',function(d,i){
-        if(d.children){
-          var height = Math.log(Math.abs(d.height/2 - rootNode.height/2 - 1)); 
-          var primitive = "primitive:cylinder;height:" + height.toString() + ";"
-          var radius = "radius:" + d.r + ";"
-        }
-        else{
-          var primitive = "primitive:sphere;"
-          var radius = "radius:" + d.r*2 + ";"
-        }
-        if(i == 0){
-          radius = "radius:0;"; 
-        }
-        
-        return primitive + radius; 
-      })
-      .attr('position', function(d,i){
-        if(d.children){
-          var half_height = Math.log(Math.abs(d.height/2 - rootNode.height/2 - 1))/2; 
-          var positionStr = d.x.toString() + " " + half_height.toString() + "  " + d.y.toString();    
-        }
-        else{
-          var height = Math.log(Math.abs(d.height/2 - rootNode.height/2 - 1));  
-          var positionStr = d.x.toString() + " " + height.toString() + "  " + d.y.toString();   
-        }
-        return positionStr
-      })
-      .attr('material',function(d,i){
-        var metalness = "metalness:0.7;roughness:0.4;"; 
-        var colorIndex = Math.abs((d.height - rootNode.height)/3); 
-        if(colorIndex == 0){
-          colorIndex += 0.02; 
-        } 
-        console.log(colorIndex,d.height)
-        var d3Color = d3.interpolatePurples(colorIndex); 
-        var color = "color:" + d3Color; 
-        return metalness + color; 
-      })
-    console.log(rootNode); 
-    console.log(treeEntity);
-    
-    treeEntity.setAttribute('position',{x:0,y:0,z:0})
-    // treeEntity.setAttribute('rotation',{x:-90,y:0,z:0}); 
+    // Using rootNode as the base, get the children nodes and go through them! 
+    var currentPosition = 0; 
+    // packLayout(rootNode); 
+    for(let i = 0; i < rootNode.children.length; i++){
+      // Grab the children iteratively:
+      var childNode = rootNode.children[i]; 
+      var descendants = childNode.descendants(); 
+      var sectionContainer = document.createElement('a-entity'); 
+      for(let j = 0; j<descendants.length; j++){
+        var sectionElement = document.createElement('a-entity'); 
+        sectionElement.setAttribute('sectionshape',{descendant:descendants[j],rootSection:descendants[0]}); 
+        sectionContainer.appendChild(sectionElement); 
+      }
+      console.log(currentPosition);
+      sectionContainer.setAttribute('position',{x:currentPosition,y:0,z:0}); 
+      treeEntity.appendChild(sectionContainer); 
+      // if(i<rootNode.children.length-1){
+      //   currentPosition += rootNode.children[i+1].r*2; 
+      // }
+      currentPosition = currentPosition + childNode.r*2 + 0.6 ;
+    }
+    treeEntity.setAttribute('position',{x:-currentPosition/2,y:0,z:-9})
+    var lightContainer = document.createElement('a-entity'); 
+    var areaLight = document.createElement('a-entity'); 
+    areaLight.setAttribute('area-light',{intensity:2,color:"#0f0",width:currentPosition+18,height:36});
+    areaLight.setAttribute('rotation',{x:90,y:0,z:0}); 
+    areaLight.setAttribute('position',{x:0,y:10,z:0}); 
+    treeEntity.appendChild(areaLight);
     return treeEntity
   }
 }); 
+
 
 /************************************
 
