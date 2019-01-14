@@ -15,7 +15,7 @@ All rights reserved, 2018.
 /**********
 This is an umbrella component that handles into and out-of VR events. That's really it. 
 **********/
-
+document.addEventListener('click',onButtonClick); 
 
 AFRAME.registerComponent('einstein', {
   init: async function () {
@@ -24,7 +24,7 @@ AFRAME.registerComponent('einstein', {
     this.outOfVR = AFRAME.utils.bind(this.outOfVR,this);
     this.el.addEventListener('enter-vr', this.intoVR);
     this.el.addEventListener('exit-vr', this.outOfVR);
-    this.el.addEventListener('click', onButtonClick)
+    // this.el.addEventListener('click', onButtonClick)
   },
   // Handling the transisition to VR:
   intoVR: async function () {
