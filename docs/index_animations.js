@@ -67,45 +67,59 @@ AFRAME.registerComponent('wikiscene', {
 		// Listen for click events: 
 		this.el.addEventListener('clicked', (e) => {this.wikiSystem.clicked()});
     // Need a workflow to make the video!! 
-    // this.el.addEventListener('animationcomplete',this.animator); 
+    this.el.addEventListener('animationcomplete',this.animator); 
     // Get the data before doing anything: 
+    var ideaScape = await this.constructIdeaScape(this.data.ideascape); 
+    this.el.appendChild(ideaScape); 
+    // Add a text component! Animate it. On animation end, fade in einstein. 
+    var ideaText = document.createElement('a-entity'); 
+    var str = 'IdeaSpace'; 
+    ideaText.setAttribute('geometry',{primitive:'plane',height:'auto',width:'auto'}); 
+    ideaText.setAttribute('material',{color:'#222',transparent:'true',opacity:0}); 
+    ideaText.setAttribute('text',{value:str,color:'white',side:'double',align:'center',baseline:'center',font:'dejavu',wrapCount:str.length+2});;  
+    ideaText.setAttribute('side', 'double');
+    ideaText.setAttribute('scale',{x: 1, y: 1, z: 1})
+    ideaText.setAttribute('position', {x: 0, y: 3, z: -200});
+    ideaText.setAttribute('id','ideatext'); 
+    ideaText.setAttribute('visible',true); 
+    ideaText.setAttribute('animation__move', {property:'position',to:{x:0,y:3,z:0},dur:8000,easing:'easeOutSine',repeat:0}); 
+    ideaText.setAttribute('animation__scale', {property:'scale',to:{x:12,y:12,z:12},dur:8000,easing:'easeOutSine',repeat:0}); 
+    // Next we need some text to say that we are visually exloring einstein's page
+    var scapeText = document.createElement('a-entity'); 
+    var estr = `Immersive Idea-Scapes in AR!`; 
+    scapeText.setAttribute('geometry',{primitive:'plane',height:'auto',width:'auto'}); 
+    scapeText.setAttribute('material',{color:'#222',transparent:'true',opacity:0}); 
+    scapeText.setAttribute('text',{value:estr,color:'white',side:'double',align:'center',baseline:'center',font:'dejavu',wrapCount:estr.length/3+3});;  
+    scapeText.setAttribute('side', 'double');
+    scapeText.setAttribute('scale',{x: 0.1, y: 0.1, z: 0.1}); // we scale up via animation. 
+    scapeText.setAttribute('position', {x: 0, y: 1.6, z:0});
+    scapeText.setAttribute('id','scapetext'); 
+    scapeText.setAttribute('visible',false); 
+    this.el.appendChild(scapeText)
 
-    var einsteinData = await wtf.fetch(this.data.ideascape.nodes[0].name); 
-    var integralSections = einsteinData.sections().filter(x => sectionChecker(x.data.title));
-    var sectionTree = await this.constructSectionTree(integralSections);
-    this.el.appendChild(sectionTree);
-    var treeEntity = this.el.querySelector('#sectiontree');
-    var sectionGroups = treeEntity.querySelectorAll('.sectiongroup'); 
-    for(var g = 0; g<sectionGroups.length; g++){
-      var sectionChildren = sectionGroups[g].childNodes; //  querySelectorAll('[position]'); 
-      for(var c = 0; c < sectionChildren.length; c++){
-        sectionChildren[c].setAttribute('animation',{property:'material.opacity',to:1,dur:2000,easing:'easeInSine',loop:0}); 
-      }
-    }
+    var einsteinText = document.createElement('a-entity'); 
+    var einsteinStr = `An Einstein-ian example... `; 
+    einsteinText.setAttribute('geometry',{primitive:'plane',height:'auto',width:'auto'}); 
+    einsteinText.setAttribute('material',{color:'#222',transparent:'true',opacity:0}); 
+    einsteinText.setAttribute('text',{value:einsteinStr,color:'white',side:'double',align:'center',baseline:'center',font:'dejavu',wrapCount:einsteinStr.length/2+2,opacity:0});;  
+    einsteinText.setAttribute('side', 'double');
+    einsteinText.setAttribute('scale',{x: 8, y:8, z:8}); // we scale up via animation. 
+    einsteinText.setAttribute('position', {x: 0, y: 1, z:0});
+    einsteinText.setAttribute('id','einsteintext'); 
+    einsteinText.setAttribute('visible',false); 
+    this.el.appendChild(einsteinText)
+  
+    // Process the ideaScape object: (which here, only consists of einstein!)
+    this.el.appendChild(ideaText);
 
-
-    // var ideaScape = await this.constructIdeaScape(this.data.ideascape); 
-    // this.el.appendChild(ideaScape); 
-    // // Add a text component! Animate it. On animation end, fade in einstein. 
-    // var ideaText = document.createElement('a-entity'); 
-    // var str = 'IdeaSpace'; 
-    // ideaText.setAttribute('geometry',{primitive:'plane',height:'auto',width:'auto'}); 
-    // ideaText.setAttribute('material',{color:'#222',transparent:'true',opacity:0}); 
-    // ideaText.setAttribute('text',{value:str,color:'white',side:'double',align:'center',baseline:'center',font:'dejavu',wrapCount:str.length+2});;  
-    // ideaText.setAttribute('side', 'double');
-    // ideaText.setAttribute('scale',{x: 1, y: 1, z: 1})
-    // ideaText.setAttribute('position', {x: 0, y: 3, z: -500});
-    // ideaText.setAttribute('id','ideatext'); 
-    // ideaText.setAttribute('visible',true); 
-    // ideaText.setAttribute('animation__move', {property:'position',to:{x:0,y:3,z:0},dur:2000,easing:'easeOutSine',repeat:0}); 
-    // ideaText.setAttribute('animation__scale', {property:'scale',to:{x:12,y:12,z:12},dur:2000,easing:'easeOutSine',repeat:0}); 
-    // // 
-    // this.el.appendChild(ideaText);
+    //
     // console.log(this.data.ideascape)
 
 	}, 
+
   // the animate function: 
   animator: async function(e) {
+      // console.log(e);
       if(e.target.id == 'ideatext' && e.detail.name == 'animation__move'){
         e.target.setAttribute('animation__fadeout',{property:'text.opacity',to:0,dur:2000,delay:0,easing:'linear',repeat:0}); 
         var ideascape = this.el.querySelector('#ideascape'); 
@@ -140,6 +154,9 @@ AFRAME.registerComponent('wikiscene', {
         var model = ideascape.querySelector('[ideamodel]'); 
         model.setAttribute('visible',false); 
         // Bring in the text: 
+        var scapeText = this.el.querySelector('#scapetext'); 
+        scapeText.setAttribute('visible',true); 
+        scapeText.setAttribute('animation__stextin',{property:'scale',to:{x:8,y:8,z:8},dur:6000,easing:'easeOutSine'}); 
       }
       else if(e.detail.name == 'animation__stextin'){
         var ideascape = this.el.querySelector('#ideascape'); 
@@ -276,7 +293,124 @@ AFRAME.registerComponent('wikiscene', {
         var tunnelEntity = this.el.querySelector('#linktunnel'); 
         tunnelEntity.setAttribute('animation__tunnelmove',{property:'position',from:{x:0,y:0,z:-108.1},to:{x:0,y:0,z:-58},easing:'linear',dur:12000});
       }
+      else if(e.detail.name == 'animation__tunnelmove'){
+        var tunnelEntity = this.el.querySelector('#linktunnel'); 
+        var thoughtExps = tunnelEntity.querySelector("#Einsteinsthoughtexperiments"); 
+        thoughtExps.setAttribute('animation__thoughtmove',{property:'position',to:{x:0,y:0,z:2.5},easing:'easeInSine',dur:1000}); 
+        thoughtExps.setAttribute('animation__thoughtgrow',{property:'scale',to:{x:7,y:2,z:7},easing:'easeOutSine',dur:4000}); 
+      }
+      else if(e.detail.name == 'animation__thoughtgrow'){
+        // Clear the tunnel: 
+        var tunnelEntity = this.el.querySelector('#linktunnel'); 
+        this.el.removeChild(tunnelEntity); 
+        // Add back the Einstein! 
+        var ideascape = this.el.querySelector('#ideascape'); 
+        var model = ideascape.querySelector('[ideamodel]'); 
+        model.setAttribute('visible',true); 
+        model.setAttribute('animation__bringback',{property:'model-opacity',to:1,easing:'easeInSine',dur:6400}); 
+        var circle = ideascape.querySelector('#linkcircle'); 
+        circle.setAttribute('animation__tighten',{property:'scale',from:{x:20,y:1,z:20},to:{x:1,y:1,z:1},easing:'easeInCubic',dur:8000,loop:0});
+        var children = circle.querySelectorAll('.sector'); 
+        circle.setAttribute('visible',true);
+        var delayStep = 3000/children.length; 
+        for(let i = children.length-1; i>=0; i--){
+          var currDelay = (children.length-i+1)*delayStep; 
+          children[i].setAttribute('animation__back',{property:'material.opacity',from:0,to:1,dur:10,delay:currDelay,loop:0}); 
+        } 
+      }
+      else if(e.detail.name == 'animation__tighten'){
+        var thoughtTitle = `Einstein's thought experiments`
+        var thoughtNode = {name:thoughtTitle,parent:'Albert_Einstein'}; 
+        var currentIdeaScape = this.data.ideascape; 
+        currentIdeaScape.nodes.push(thoughtNode); 
+        await this.constructIdeaScape(currentIdeaScape);
+        var ideascape = this.el.querySelector('#ideascape'); 
+        ideascape.setAttribute('animation__movescape',{property:'position',to:{x:0,y:0,z:4.20},dur:2000}); 
+      }
+      else if(e.detail.name == 'animation__movescape'){
+        // now we pull the links we seek! 
+        var newNodes = [
+          {name:'Special relativity',parent:`Einstein's thought experiments`}, 
+          {name:'General relativity',parent:`Einstein's thought experiments`},
+          {name:'Relativity of simultaneity',parent:`Einstein's thought experiments`},
+          {name:'Quantum entanglement',parent:`Einstein's thought experiments`}
+        ]; 
+        var currentScape = this.data.ideascape; 
+        var allNodes = currentScape.nodes.concat(newNodes); 
+        console.log(allNodes); 
+        currentScape.nodes = allNodes; 
+        await this.constructIdeaScape(currentScape); 
+        var ideascape = this.el.querySelector('#ideascape'); 
+        ideascape.setAttribute('animation__movescapeagain',{property:'position',to:{x:0,y:0,z:9.2},dur:2000}); 
+      }
+      else if(e.detail.name == 'animation__movescapeagain'){
+        // Close out with a bang! The final animation! 
+        var ideascape = this.el.querySelector('#ideascape'); 
+        // ideascape.setAttribute('animation__scapehide',{property:'visible',to:false,delay:10000})
+        // Toss random pieces of the circle about! 
+        var circles = ideascape.querySelectorAll('#linkcircle'); 
+        for(let c = 0; c < circles.length; c++){
+          try{
+            circles[c].setAttribute('animation__finalspread',{property:'scale',from:{x:1,y:1,z:1},to:{x:20,y:2,z:20},easing:'easeOutCubic',dur:8000,loop:0});
+            var sectors = circles[c].querySelectorAll('.sector'); 
+            console.log(sectors); 
+            var delayStep = 3000/sectors.length; 
+            for(let i = sectors.length-1; i>=0; i--){
+              var currDelay = (sectors.length-i+1)*delayStep; 
+              sectors[i].setAttribute('animation__bitfade',{property:'material.opacity',from:1,to:0,dur:10,delay:currDelay,loop:0}); 
+            } 
+            var circleParent = circles[c].parentEl; 
+            var model = circleParent.querySelector('.articlemodel'); 
+            var shape = circleParent.querySelector('.articleshape'); 
+            var text = circleParent.querySelector('.titletext'); 
+            if(model){
+              model.setAttribute('animation__destroyer',{property:'model-opacity',to:0,easing:'easeOutSine',dur:8000,delay:1500}); 
+            }
+            if(shape){
+              shape.setAttribute('animation__shape',{property:'material.opacity',to:0,dur:3000,easing:'easeOutSine',delay:1500}); 
+            }
+            if(text){
+              text.setAttribute('animation__text',{property:'text.opacity',to:0,dur:3000,easing:'easeOutSine',delay:1500}); 
+            }; 
+          }
+          catch(err){
+            console.log('Error setting circle attribute ', err, circles[c])
+          }
+        }
+      }
+      else if(e.detail.name == 'animation__destroyer'){
+        // bring in final text... 
+        console.log('destroyed')
+        var ideascape = this.el.querySelector('#ideascape'); 
+        ideascape.setAttribute('visible',false); 
+        var outString = 'IdeaSpace: Inspiring imagination through immersion!';
+        var outText = document.createElement('a-entity');
+        outText.setAttribute('geometry',{primitive:'plane',height:'auto',width:'auto'}); 
+        outText.setAttribute('material',{color:'#000',transparent:'true',opacity:0}); 
+        outText.setAttribute('text',{value:outString,color:'white',side:'double',align:'center',baseline:'center',font:'dejavu',wrapCount:outString.length/2+2,opacity:0});;  
+        outText.setAttribute('side', 'double');
+        outText.setAttribute('scale',{x: 12, y:12, z:12}); // we scale up via animation. 
+        outText.setAttribute('position', {x: 0, y:1.6, z:-2});
+        outText.setAttribute('id','outtext'); 
+        outText.setAttribute('visible',true); 
+        outText.setAttribute('animation',{property:'text.opacity',to:1,dur:2000,loop:0,easing:'easeInSine'});
+        outText.setAttribute('animation__moveit',{property:'position',to:{x:0,y:1.6,z:-200},dur:10000,delay:4000,loop:0,easing:'easeOutSine'});
+        outText.setAttribute('animation__fader',{property:'text.opacity',to:0,dur:10000,delay:4000,loop:0,easing:'easeOutSine'});
+        this.el.appendChild(outText); 
+        var sceneEl = this.el.sceneEl; 
+        var floor = sceneEl.querySelector('#floor'); 
+        var sky = sceneEl.querySelector('#sky'); 
+        floor.setAttribute('animation__floorout',{property:'material.opacity',to:0,easing:'easeOutSine',dur:6000,delay:6000}); 
+        sky.setAttribute('animation__skyout',{property:'material.opacity',to:0,easing:'easeOutSine',dur:6000,delay:6000}); 
 
+      }
+        // Then fade out the 'idea-chunks'
+        // Then fade floor. 
+
+        // Then display some memorable words. 
+
+        // That will be all she wrote.  
+      
     },
 
   speaker: async function(text){

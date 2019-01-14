@@ -7,26 +7,24 @@ AFRAME.registerComponent('albertmodel', {
   init: function () {
     // bind modelLoaded function:
     this.onModelLoad = AFRAME.utils.bind(this.onModelLoad, this);
+    this.getBox = AFRAME.utils.bind(this.getBox, this);
     // And set the function to execute when the model finishes loading:
     this.el.addEventListener('model-loaded', this.onModelLoad);
   },
   // Update monitor:
   update: function () {
-  	console.log('Model updated');
   },
   // The model-loaded event listener:
   onModelLoad: async function () {
-    console.log('loaded!!!');
     // That's cool and all, lets see if we can't get a bounding box:
     var bbox = await getBox(this.el.object3D);
     var xMid = (bbox.max.x + bbox.min.x) / 2;
     var zMid = (bbox.max.z + bbox.min.z) / 2;
     var yMid = (bbox.max.y + bbox.min.y) / 2;
     this.el.setAttribute('position', {x: -xMid, y: -yMid + 4, z: -zMid - 6});
+  }, 
+  getBox: async function(object){
+    var bbox = await new THREE.Box3().setFromObject(object);
+    return bbox;
   }
 });
-
-async function getBox (object) {
-  var bbox = await new THREE.Box3().setFromObject(object);
-  return bbox;
-}

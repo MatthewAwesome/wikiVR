@@ -39,8 +39,8 @@ AFRAME.registerComponent('desktop-camera', {
 			var cursor = document.createElement('a-entity'); 
 			cursor.setAttribute('id','camera-cursor'); 
 			cursor.setAttribute('position',{x:0,y:0,z:-1}); 
-			cursor.setAttribute('geometry',{primitive:'ring',radiusInner:0.02,radiusOuter:0.03}); 
-			cursor.setAttribute('material',{color:'#ccc',shader:'flat'}) 
+			// cursor.setAttribute('geometry',{primitive:'ring',radiusInner:0.02,radiusOuter:0.03}); 
+			// cursor.setAttribute('material',{color:'#ccc',shader:'flat',transparent:true,opacity:0}) 
 			cursor.setAttribute('cursor',{fuse:true,fuseTimeout:500}); 
 			var light = document.createElement('a-entity'); 
 			light.setAttribute('light',{type:'spot',color:'#fff',angle:36,penumbra:0.67,intensity:0.5}); 
